@@ -1,0 +1,218 @@
+/* @konigi/tokens — the single source of truth for color, elevation, and radii
+   across every Konigi app.
+
+   Code is truth. The Figma library is generated from this file, never the other
+   way round: values get tuned live against a running app, and a Figma-upstream
+   pipeline would put an export step inside that loop.
+
+   Theme is resolved to an explicit light/dark in JS (auto follows the OS) and
+   written to <html data-theme>. Every token has a light and a dark value, so
+   components reference var(--token) and never branch on theme themselves. If a
+   component has a :root[data-theme="dark"] rule in it, that's a token missing
+   from this file.
+
+   The dark block is scoped to `:root[data-theme="dark"], [data-theme="dark"]`
+   rather than :root alone. The first half is what the apps match on <html>, at
+   unchanged specificity. The second lets any element opt in, which is what makes
+   a side-by-side light/dark preview possible in Storybook without duplicating a
+   single value.
+
+   Use the tokens. Don't hardcode colors, radii, or shadows in components. If you
+   need a value that doesn't exist, add a token rather than a one-off hex.
+
+   App-specific tokens do NOT live here. They stay in each app's own
+   src/styles/tokens.css, imported after this file so it can override
+   deliberately. A token earns a place here only when more than one app already
+   has it and they already agree what it means. */
+:root {
+  /* surfaces */
+  --bg: #fbfbfa;
+  --rail-bg: #f7f6f5;
+  /* Unused in Unicron since the chrome moved to --rail-bg; kept because
+     Unigraph's toolbar still paints it and the two files are meant to stay
+     name-for-name alignable. */
+  --rail-glass: #ffffff;
+  --panel: #ffffff;
+  --sunken: #f0eee9; /* inset code chips, segmented tracks */
+  --chrome: var(--panel); /* opaque chrome over the graph canvas */
+  --glass-bg: var(--panel); /* opaque floating panels */
+  --scrim: rgba(20, 18, 15, 0.32);
+  --toast-bg: #1f1d1a;
+  --toast-text: #f5f4f2;
+  /* The toast is a dark surface under BOTH themes (--toast-bg only shifts from
+     #1f1d1a to #3a3a3c), so its foreground colours are tuned for dark and don't
+     flip — same arrangement as the --console-* group. The app's usual --accent
+     and --muted are tuned for the page, not for this. */
+  --toast-accent: #8aa9ff;
+  --toast-accent-hover: #acc1ff;
+  --toast-muted: #8b8f99;
+  /* lines, states, text */
+  --border: #e7e5e0;
+  /* Divider inside dropdown menus. A touch stronger than --border so it stays
+     visible against the raised menu fill (which nearly equals --border in dark). */
+  --menu-divider: rgba(0, 0, 0, 0.1);
+  /* Button hover — a strong neutral gray, the same value --selected-strong
+     holds, so a hovered button and a selected one read alike. Buttons are the
+     bulk of what hovers in the chrome, so this is the default. */
+  --hover: rgba(120, 120, 128, 0.26);
+  /* List rows and menu items hover far more often and in longer runs, so they
+     stay on the lighter wash — a list full of --hover would be a slab. */
+  --hover-row: rgba(0, 0, 0, 0.05);
+  --text: #1f1d1a;
+  --muted: #8b867d;
+  --on-accent: #ffffff;
+  /* accent + selection */
+  --accent: #3b5bdb;
+  --accent-soft: #e8edfb;
+  /* Apple-style neutral selected fill for tabs / segmented controls. */
+  --selected: rgba(120, 120, 128, 0.16);
+  /* Lighter neutral for the selected tab + selected rail item. */
+  --selected-soft: rgba(120, 120, 128, 0.14);
+  /* Stronger neutral for selected states that must hold up on the light chrome.
+     Also what --hover holds, so a hovered button can never look more selected
+     than a selected one. */
+  --selected-strong: rgba(120, 120, 128, 0.26);
+  /* One step past that, for pointing at a control that's already on — otherwise
+     a selected button is the only thing in the app that ignores the cursor. */
+  --selected-hover: rgba(120, 120, 128, 0.34);
+  /* Hovering an *un*selected segment of a segmented control or tab row. It has
+     to sit below every selected fill in the app — the sliding pill's
+     --selected-strong (0.26) and the tab row's --selected-soft (0.14) — or
+     pointing at a segment makes it look more chosen than the chosen one. That's
+     why it isn't `--hover` — buttons deliberately share one gray for hover and
+     selected, and a segmented control is the one place that reads as a bug. */
+  --seg-hover: rgba(120, 120, 128, 0.1);
+  /* Console surfaces — the capture log and the run-review diff. Deliberately
+     dark in BOTH themes (they read as terminal output, not as app chrome), so
+     unlike every other token here these have no dark override: one value each,
+     used as-is under either theme. That's also why they can't borrow --toast-bg
+     or --text, which flip. */
+  --console-bg: #1f1d1a;
+  --console-text: #d6d2c8;
+  --console-muted: #8b867d; /* secondary lines */
+  --console-dim: #6f6a61; /* structural markers: diff gaps */
+  --console-add: #9bd6a5;
+  --console-remove: #e2a09a;
+  /* State colours. Not "semantic" in the danger/success sense — these name a
+     thing the app tracks, and they're the same hue under both themes because
+     they identify a state rather than carrying contrast on their own. */
+  --archived: #e8590c;
+  --archived-text: #d9480f;
+  --star: #e5a50a; /* a starred / favourited note */
+  /* semantic */
+  --danger: #c0392b;
+  --danger-bg: #fdecea;
+  --success: #1f7a3d;
+  --warning: #a8741a;
+  --warning-bg: #fbf0d9;
+  /* elevation */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
+  /* Raised control surface — shared by buttons, pills, dropdown triggers, the
+     segmented capsules, menus, and the graph legend so they read as one family.
+     In light it's a panel fill under a soft drop shadow, no rim: the shadow
+     alone draws the chip. State is carried by a translucent gray laid over the
+     fill, which is why the hover/selected tokens are gradients rather than flat
+     colors — the same overlay then works on any surface. Tune these in :root to
+     move every control at once. */
+  --control-bg: var(--panel);
+  --control-border: transparent;
+  --control-hover: linear-gradient(var(--hover), var(--hover)), var(--panel);
+  --control-selected:
+  linear-gradient(var(--selected-strong), var(--selected-strong)),
+  var(--panel);
+  --control-selected-hover:
+  linear-gradient(var(--selected-hover), var(--selected-hover)), var(--panel);
+  --shadow-control: 0 1px 4px rgba(0, 0, 0, 0.1);
+  /* Outer lift for things that must float clear of what's behind them (colored
+     fills, the graph legend). Dark's --shadow-control is an inset rim and gives
+     them nothing, so they ask for this instead. */
+  --shadow-raised: 0 1px 4px rgba(0, 0, 0, 0.1);
+  --shadow-menu: 0 10px 28px rgba(0, 0, 0, 0.16);
+  --shadow-pop: 0 12px 30px rgba(0, 0, 0, 0.18);
+  --shadow-modal: 0 24px 60px rgba(0, 0, 0, 0.22);
+  --shadow-toast: 0 8px 24px rgba(0, 0, 0, 0.25);
+  /* concentric radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  color-scheme: light dark;
+}
+
+/* Theme is resolved to an explicit light/dark in JS (auto follows the OS), then
+   set as data-theme on <html>; this block holds the dark token values. */
+:root[data-theme="light"],
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"],
+[data-theme="dark"] {
+  color-scheme: dark;
+  /* Dark gray surfaces (not near-black), layered bg < rail < panel for depth. */
+  --bg: #242426;
+  --rail-bg: #2c2c2e;
+  --rail-glass: #2c2c2e;
+  --panel: #323234;
+  --sunken: rgba(255, 255, 255, 0.06);
+  --chrome: var(--panel);
+  --glass-bg: var(--panel);
+  --scrim: rgba(0, 0, 0, 0.5);
+  --toast-bg: #3a3a3c;
+  --toast-text: #ececec;
+  --border: #3a3a3c;
+  --menu-divider: rgba(255, 255, 255, 0.14);
+  /* Light's --selected-strong (0.26) would be a slab at button size on these
+     surfaces; this is the same intent, one step up from the resting fill. */
+  --hover: rgba(255, 255, 255, 0.12);
+  --hover-row: rgba(255, 255, 255, 0.07);
+  --text: #ececec;
+  --muted: #98938b;
+  --on-accent: #ffffff;
+  --accent: #6b8cff;
+  --accent-soft: rgba(107, 140, 255, 0.18);
+  --selected: rgba(120, 120, 128, 0.3);
+  --selected-soft: rgba(120, 120, 128, 0.24);
+  --selected-strong: rgba(120, 120, 128, 0.44);
+  --selected-hover: rgba(255, 255, 255, 0.22);
+  /* Sits above the --tb-fill track (0.035) and below --tb-fill-active (0.16). */
+  --seg-hover: rgba(255, 255, 255, 0.07);
+  /* Glass controls (dark only). Apple's Liquid Glass refracts what's behind it;
+     this window is opaque, so there's nothing to refract and a backdrop-filter
+     would cost GPU time for no visible change. What reads as glass at this size
+     is a fill that barely lifts off the chrome plus a hairline rim, and the rim
+     is what draws the button.
+
+     The rim is deliberately uniform. A brighter top edge only paints where a
+     shape has a flat top, so wide pills lit up while round buttons stayed dark
+     and one token produced two different brightnesses. */
+  --tb-fill: rgba(255, 255, 255, 0.035);
+  --tb-fill-hover: rgba(255, 255, 255, 0.09);
+  --tb-fill-active: rgba(255, 255, 255, 0.16);
+  --tb-rim: rgba(255, 255, 255, 0.1);
+  /* Unused here since the rim went uniform; kept because Unigraph's .tb-btn
+     still paints it and the two files stay name-for-name alignable. */
+  --tb-rim-top: rgba(255, 255, 255, 0.15);
+  --danger: #ff6b5e;
+  --danger-bg: rgba(255, 107, 94, 0.16);
+  --success: #5bc77f;
+  --warning: #e0b057;
+  --warning-bg: rgba(224, 176, 87, 0.16);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  /* On dark the raised chip becomes glass: the rim replaces the drop shadow,
+     drawn as an inset shadow rather than a border so the control keeps its box
+     and the icon doesn't shift. The rim belongs to the material, not to the
+     state, so only the fill moves between rest, hover and selected. */
+  --control-bg: var(--tb-fill);
+  --control-border: transparent;
+  --control-hover: var(--tb-fill-hover);
+  --control-selected: var(--tb-fill-active);
+  --control-selected-hover: var(--selected-hover);
+  --shadow-control: inset 0 0 0 1px var(--tb-rim);
+  --shadow-raised: 0 1px 4px rgba(0, 0, 0, 0.45);
+  --shadow-menu: 0 10px 28px rgba(0, 0, 0, 0.5);
+  --shadow-pop: 0 12px 30px rgba(0, 0, 0, 0.55);
+  --shadow-modal: 0 24px 60px rgba(0, 0, 0, 0.6);
+  --shadow-toast: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
