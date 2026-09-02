@@ -1,0 +1,260 @@
+# Runbook
+
+The plan as commands. Written against the repo as it actually is — Storybook and
+`tokens.css` already exist, so this picks up from there rather than from
+`git init`.
+
+Steps 1–4 get the catalog live and are worth doing in one sitting. 5–7 put both
+apps on the package. `controls.css` and Figma are later; see
+[PLAN.md](PLAN.md).
+
+Commit both app working trees before you start. Step 5 deletes
+`brain-app/src/styles/tokens.css`.
+
+---
+
+## 1 · Split the 13 back out
+
+They're Unicron's. Cut them from `tokens.css` here and land them in the app.
+
+```
+--console-bg  --console-text  --console-muted  --console-dim
+--console-add  --console-remove
+--toast-accent  --toast-accent-hover  --toast-muted
+--archived  --archived-text  --star  --chrome
+```
+
+Each has a comment block above it explaining why it exists — move the comment
+with the token, it's the part that stops someone re-adding it later. Both the
+`:root` and `:root[data-theme="dark"]` blocks need doing; several of these are
+deliberately declared in light only.
+
+```bash
+cd ~/Sites/konigi-tokens
+$EDITOR tokens.css
+npm run storybook   # the catalog should now show 48, and still group correctly
+```
+
+**Verify.** `grep -c -- '^\s*--' tokens.css` and the catalog agree. No name
+appears both here and in the app's local file.
+
+---
+
+## 2 · Rules and CI
+
+`scripts/check.mjs` and `invariants.json` don't exist yet — the token differ and
+the ladder assertion were both written and run during the audit, so this is
+mostly transcription. `invariants.json` holds three things: `themeInvariant`
+(the allowlist), `ladders` (the chains from the plan), `equals` (the deliberate
+`--hover === --selected-strong`).
+
+```bash
+mkdir -p scripts .github/workflows
+$EDITOR scripts/check.mjs invariants.json .github/workflows/ci.yml
+node scripts/check.mjs --tokens tokens.css --invariants invariants.json
+```
+
+Add to `package.json`:
+
+```json
+"scripts": {
+  "check": "node scripts/check.mjs --tokens tokens.css --invariants invariants.json"
+},
+"files": ["tokens.css", "invariants.json", "scripts"],
+"exports": {
+  ".": "./tokens.css",
+  "./tokens.css": "./tokens.css",
+  "./invariants.json": "./invariants.json",
+  "./check": "./scripts/check.mjs"
+}
+```
+
+`"private": true` blocks `npm publish`, which is fine — a `github:` dependency
+installs over git and ignores it. Drop it only if you ever want a registry.
+
+```bash
+gh repo create jibbajabba/konigi-tokens --public --source=. --remote=origin
+git add -A && git commit -m "Token rules and CI"
+git push -u origin main && git tag v1.0.0 && git push --tags
+```
+
+**Verify.** `0 error(s)`. Then open a throwaway PR setting `--seg-hover` to
+`0.30` and confirm CI fails with the ladder message. Close it without merging.
+That one test proves the whole apparatus — it's the failure mode with no other
+tripwire.
+
+Private repo instead of public? CI runners need read access for `npm ci`: a
+deploy key or a machine user. Public is genuinely less work, and Pages in step 4
+is free on a public repo.
+
+---
+
+## 3 · Ladder story
+
+The chains from `invariants.json`, rendered as swatch strips in both themes. It
+reads the same file the linter does, so the two can't disagree — the catalog is
+already parsing `tokens.css` at load for exactly that reason, and this follows
+the pattern.
+
+```bash
+$EDITOR stories/Ladders.stories.tsx
+npm run storybook
+```
+
+**Verify.** Every chain reads left-to-right lighter to heavier, in both themes.
+If a strip looks wrong here, the linter would also fail — same numbers, two
+presentations.
+
+---
+
+## 4 · Publish the catalog
+
+`storybook-static` is gitignored and the dev server is localhost only, so today
+nobody opens it. Pages fixes that, and the README's stop condition depends on it
+being openable.
+
+```yaml
+# .github/workflows/pages.yml
+name: pages
+on:
+  push: { branches: [main] }
+permissions: { contents: read, pages: write, id-token: write }
+concurrency: { group: pages, cancel-in-progress: true }
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build-storybook
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: storybook-static }
+      - id: deploy
+        uses: actions/deploy-pages@v4
+```
+
+Turn on Pages in the repo settings with **Source: GitHub Actions**, then tag:
+
+```bash
+git tag v1.0.0 && git push --tags
+```
+
+**Verify.** The catalog opens at the Pages URL and shows 48 tokens, light and
+dark side by side. That URL is the artifact — bookmark it.
+
+---
+
+## 5 · Unicron adopts
+
+No value changes, so the built CSS should come out identical.
+
+```bash
+cd ~/Sites/brain-app
+npx vite build && cp dist/assets/index-*.css /tmp/before.css
+
+npm i -S github:jibbajabba/konigi-tokens#v1.0.0
+$EDITOR src/styles/tokens.local.css     # the 13 from step 1
+rm src/styles/tokens.css
+```
+
+`src/main.tsx`:
+
+```diff
+-import "./styles/tokens.css";
++import "@konigi/tokens/tokens.css";
++import "./styles/tokens.local.css";
+ import "./App.css";
+```
+
+```bash
+npx tsc --noEmit && npx vite build
+diff <(sort /tmp/before.css) <(sort dist/assets/index-*.css) && echo IDENTICAL
+
+node node_modules/@konigi/tokens/scripts/check.mjs \
+  --tokens node_modules/@konigi/tokens/tokens.css,src/styles/tokens.local.css \
+  --css src \
+  --invariants node_modules/@konigi/tokens/invariants.json
+```
+
+**Verify.** `IDENTICAL`, and the checker flags only the four known literals — the
+two `::highlight()` rules, their `#1a1a1a`, and the switch knob's shadow. Mark
+those `/* tokens-allow */` and re-run to reach zero.
+
+---
+
+## 6 · Unigraph adopts
+
+Same two import lines. Its local file is empty, so skip that import entirely
+rather than shipping an empty `:root {}`.
+
+Then `src/App.css`, top-down (line numbers drift as you edit, so grep the
+snippet instead):
+
+**`.seg`** — `box-shadow: 0 1px 5px rgba(0, 0, 0, 0.14)` → `var(--shadow-control)`
+
+**`.tb-btn` and `.view-seg`** — `box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1)` →
+`var(--shadow-control)`
+
+**`.seg button:hover:not(.active)`** — the live bug:
+
+```diff
+ .seg button:hover:not(.active) {
+-  color: var(--text);
+-  background: var(--hover);
++  background: var(--seg-hover);
+ }
+```
+
+**Delete all six `:root[data-theme="dark"]` blocks**, and rewrite the light
+rules to go through the tokens:
+
+```css
+.tb-btn        { background: var(--control-bg);
+                 box-shadow: var(--shadow-control); }
+.tb-btn:hover:not(:disabled)
+               { background: var(--control-hover); }
+.tb-btn.active { background: var(--control-selected); }
+.tb-btn.active:hover:not(:disabled)
+               { background: var(--control-selected-hover); }
+.seg           { background: var(--control-bg); }
+.seg-indicator { background: var(--control-selected); }
+```
+
+**Verify.** `grep -c 'data-theme="dark"' src/App.css` returns `0`. Run it in both
+themes: the toolbar buttons and the Preview/Edit switch should read as one
+material, and hovering an unselected segment should now sit clearly below the
+sliding pill instead of matching it.
+
+---
+
+## 7 · App CI, then the canary
+
+Same workflow file in both apps: `npm ci`, `check.mjs`, `tsc --noEmit`,
+`vite build`.
+
+The canary goes last, once both are green. Upstream dispatches on a version tag;
+each app answers by bumping the pin on a branch and opening a PR. Needs a
+fine-grained PAT with **contents: write** and **pull-requests: write** on both
+app repos, stored here as `CANARY_TOKEN` — the built-in `GITHUB_TOKEN` can't
+dispatch across repositories.
+
+---
+
+## Done when
+
+- [ ] `tokens.css` holds 48; the 13 live in `brain-app/src/styles/tokens.local.css`
+- [ ] The catalog is a URL, not a localhost port, and shows 48 tokens
+- [ ] Tagged `v1.0.0`, `npm run check` clean
+- [ ] Unicron builds byte-identical CSS to its pre-split baseline
+- [ ] Unigraph has zero `data-theme="dark"` selectors in `App.css`
+- [ ] Both apps pin the same tag, both lockfiles committed
+- [ ] A deliberately broken ladder fails CI here
+
+Rollback at any point: `npm rm @konigi/tokens`, restore `src/styles/tokens.css`
+from git, revert the `main.tsx` import. Nothing here touches app logic.

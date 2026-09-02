@@ -78,6 +78,9 @@ that's already in the file.
 
 ## Roadmap
 
+Full detail in [docs/PLAN.md](docs/PLAN.md); the sequential steps for getting
+both apps onto this package are in [docs/RUNBOOK.md](docs/RUNBOOK.md).
+
 Staged, and each stage is useful on its own:
 
 - **A — token catalog.** Done. Zero drift risk: tokens *are* the shared artifact.
