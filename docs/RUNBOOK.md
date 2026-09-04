@@ -44,7 +44,7 @@ appears both here and in the app's local file.
 
 ---
 
-## 2 · Rules and CI — script done, repo not created yet
+## 2 · Rules and CI — done
 
 `scripts/check.mjs` and `invariants.json` don't exist yet — the token differ and
 the ladder assertion were both written and run during the audit, so this is
@@ -111,7 +111,14 @@ presentations.
 
 ---
 
-## 4 · Publish the catalog
+## 4 · Publish the catalog — done
+
+Live at <https://jibbajabba.github.io/konigi-tokens/>.
+
+`configure-pages` can't switch Pages on itself — the workflow token gets
+"Resource not accessible by integration" on the create call even with
+`pages: write`. One `gh api -X POST repos/OWNER/REPO/pages -f build_type=workflow`
+first, or the settings toggle below.
 
 `storybook-static` is gitignored and the dev server is localhost only, so today
 nobody opens it. Pages fixes that, and the README's stop condition depends on it
@@ -253,8 +260,8 @@ dispatch across repositories.
 ## Done when
 
 - [x] `tokens.css` holds 50; the 11 go to `brain-app/src/styles/tokens.local.css` at step 5
-- [ ] The catalog is a URL, not a localhost port, and shows 50 tokens
-- [x] `npm run check` clean; not tagged (no remote yet)
+- [x] The catalog is a URL, not a localhost port, and shows 50 tokens
+- [x] Tagged `v1.0.0`, `npm run check` clean
 - [ ] Unicron builds byte-identical CSS to its pre-split baseline
 - [ ] Unigraph has zero `data-theme="dark"` selectors in `App.css`
 - [ ] Both apps pin the same tag, both lockfiles committed
