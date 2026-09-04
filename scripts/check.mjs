@@ -217,8 +217,27 @@ if (cssRoot) {
     const lines = mask(readFileSync(f, "utf8")).split("\n");
     /** A line that's nothing but comment: blank once masked, not blank before. */
     const commentOnly = (i) => lines[i]?.trim() === "" && raw[i]?.trim() !== "";
+
+    /**
+     * Lines covered by a marker on a block-opening line, through to the
+     * matching brace. `@media print { /* tokens-allow *\/` covers the whole
+     * block — print is ink on paper, every value in there is deliberately
+     * literal, and ten separate markers would be worse than the problem.
+     */
+    const blockAllowed = new Set();
+    lines.forEach((line, i) => {
+      if (!raw[i].includes("tokens-allow") || !line.trim().endsWith("{")) return;
+      let depth = 0;
+      for (let j = i; j < lines.length; j++) {
+        depth += (lines[j].match(/\{/g) ?? []).length;
+        depth -= (lines[j].match(/\}/g) ?? []).length;
+        blockAllowed.add(j);
+        if (depth <= 0) break;
+      }
+    });
+
     const allowed = (i) => {
-      if (raw[i].includes("tokens-allow")) return true;
+      if (raw[i].includes("tokens-allow") || blockAllowed.has(i)) return true;
       for (let j = i - 1; j >= 0 && commentOnly(j); j--) {
         if (raw[j].includes("tokens-allow")) return true;
       }
