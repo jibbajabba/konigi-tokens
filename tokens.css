@@ -34,18 +34,10 @@
   --rail-glass: #ffffff;
   --panel: #ffffff;
   --sunken: #f0eee9; /* inset code chips, segmented tracks */
-  --chrome: var(--panel); /* opaque chrome over the graph canvas */
   --glass-bg: var(--panel); /* opaque floating panels */
   --scrim: rgba(20, 18, 15, 0.32);
   --toast-bg: #1f1d1a;
   --toast-text: #f5f4f2;
-  /* The toast is a dark surface under BOTH themes (--toast-bg only shifts from
-     #1f1d1a to #3a3a3c), so its foreground colours are tuned for dark and don't
-     flip — same arrangement as the --console-* group. The app's usual --accent
-     and --muted are tuned for the page, not for this. */
-  --toast-accent: #8aa9ff;
-  --toast-accent-hover: #acc1ff;
-  --toast-muted: #8b8f99;
   /* lines, states, text */
   --border: #e7e5e0;
   /* Divider inside dropdown menus. A touch stronger than --border so it stays
@@ -82,23 +74,6 @@
      why it isn't `--hover` — buttons deliberately share one gray for hover and
      selected, and a segmented control is the one place that reads as a bug. */
   --seg-hover: rgba(120, 120, 128, 0.1);
-  /* Console surfaces — the capture log and the run-review diff. Deliberately
-     dark in BOTH themes (they read as terminal output, not as app chrome), so
-     unlike every other token here these have no dark override: one value each,
-     used as-is under either theme. That's also why they can't borrow --toast-bg
-     or --text, which flip. */
-  --console-bg: #1f1d1a;
-  --console-text: #d6d2c8;
-  --console-muted: #8b867d; /* secondary lines */
-  --console-dim: #6f6a61; /* structural markers: diff gaps */
-  --console-add: #9bd6a5;
-  --console-remove: #e2a09a;
-  /* State colours. Not "semantic" in the danger/success sense — these name a
-     thing the app tracks, and they're the same hue under both themes because
-     they identify a state rather than carrying contrast on their own. */
-  --archived: #e8590c;
-  --archived-text: #d9480f;
-  --star: #e5a50a; /* a starred / favourited note */
   /* semantic */
   --danger: #c0392b;
   --danger-bg: #fdecea;
@@ -156,7 +131,6 @@
   --rail-glass: #2c2c2e;
   --panel: #323234;
   --sunken: rgba(255, 255, 255, 0.06);
-  --chrome: var(--panel);
   --glass-bg: var(--panel);
   --scrim: rgba(0, 0, 0, 0.5);
   --toast-bg: #3a3a3c;

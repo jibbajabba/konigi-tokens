@@ -9,7 +9,8 @@ import tokensSrc from "../tokens.css?raw";
 
 interface Token {
   name: string;
-  light: string;
+  /** null when the token is only declared in the dark block. */
+  light: string | null;
   dark: string;
 }
 interface Section {
@@ -86,6 +87,17 @@ function parse(css: string): Section[] {
     current.tokens.push({ name, light: value, dark: dark.get(name) ?? value });
   }
   if (current.tokens.length) sections.push(current);
+
+  // The walk above is driven by the light block, so a token declared only in
+  // dark was invisible here — five of them were, which is precisely the drift
+  // this catalog exists to make impossible. Sweep up whatever light never
+  // mentioned rather than trusting one block to list them all.
+  const seen = new Set(sections.flatMap((s) => s.tokens.map((t) => t.name)));
+  const darkOnly = [...dark]
+    .filter(([name]) => !seen.has(name))
+    .map(([name, value]) => ({ name, light: null, dark: value }));
+  if (darkOnly.length) sections.push({ title: "Dark only", tokens: darkOnly });
+
   return sections;
 }
 
@@ -97,7 +109,7 @@ function kindOf(t: Token): Kind {
   return "color";
 }
 
-function Swatch({ token }: { token: Token }) {
+function Swatch({ token, theme }: { token: Token; theme: "light" | "dark" }) {
   const kind = kindOf(token);
   const base: React.CSSProperties = {
     width: 96,
@@ -106,6 +118,11 @@ function Swatch({ token }: { token: Token }) {
     borderRadius: 8,
     background: "var(--panel)",
   };
+  // Nothing to draw. Falling through would paint an empty var() as
+  // transparent, which is indistinguishable from --control-border.
+  if (theme === "light" && token.light === null) {
+    return <div style={{ ...base, background: "none", border: "1px dashed var(--border)" }} />;
+  }
   if (kind === "shadow") {
     return <div style={{ ...base, boxShadow: `var(${token.name})` }} />;
   }
@@ -167,7 +184,7 @@ function Row({ token }: { token: Token }) {
             color: "var(--text)",
           }}
         >
-          <Swatch token={token} />
+          <Swatch token={token} theme={theme} />
           <div style={{ minWidth: 0 }}>
             <div style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 12 }}>
               {token.name}
@@ -182,7 +199,7 @@ function Row({ token }: { token: Token }) {
                 whiteSpace: "nowrap",
               }}
             >
-              {theme === "light" ? token.light : token.dark}
+              {theme === "light" ? (token.light ?? "not set in light") : token.dark}
             </div>
           </div>
         </div>
