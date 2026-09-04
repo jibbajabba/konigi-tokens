@@ -44,7 +44,7 @@ appears both here and in the app's local file.
 
 ---
 
-## 2 · Rules and CI
+## 2 · Rules and CI — script done, repo not created yet
 
 `scripts/check.mjs` and `invariants.json` don't exist yet — the token differ and
 the ladder assertion were both written and run during the audit, so this is
@@ -93,7 +93,7 @@ is free on a public repo.
 
 ---
 
-## 3 · Ladder story
+## 3 · Ladder story — done
 
 The chains from `invariants.json`, rendered as swatch strips in both themes. It
 reads the same file the linter does, so the two can't disagree — the catalog is
@@ -254,11 +254,11 @@ dispatch across repositories.
 
 - [x] `tokens.css` holds 50; the 11 go to `brain-app/src/styles/tokens.local.css` at step 5
 - [ ] The catalog is a URL, not a localhost port, and shows 50 tokens
-- [ ] Tagged `v1.0.0`, `npm run check` clean
+- [x] `npm run check` clean; not tagged (no remote yet)
 - [ ] Unicron builds byte-identical CSS to its pre-split baseline
 - [ ] Unigraph has zero `data-theme="dark"` selectors in `App.css`
 - [ ] Both apps pin the same tag, both lockfiles committed
-- [ ] A deliberately broken ladder fails CI here
+- [x] A deliberately broken ladder fails the checker, and shows red in the ladder story
 
 Rollback at any point: `npm rm @konigi/tokens`, restore `src/styles/tokens.css`
 from git, revert the `main.tsx` import. Nothing here touches app logic.
