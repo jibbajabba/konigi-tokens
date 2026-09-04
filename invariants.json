@@ -1,0 +1,42 @@
+{
+  "_": "Assertions about tokens.css that a regex can't infer and a person forgets. Read by scripts/check.mjs and, later, by the ladder story — one file so the linter and the picture can't disagree.",
+
+  "themeInvariant": {
+    "_": "Tokens deliberately declared in one theme only. Everything else must exist in both, or dark silently resolves to nothing.",
+    "lightOnly": {
+      "--toast-accent": "The toast surface is dark under both themes, so its accent is tuned for dark and must not flip.",
+      "--toast-accent-hover": "See --toast-accent.",
+      "--radius-sm": "A corner radius has no theme.",
+      "--radius-md": "A corner radius has no theme.",
+      "--radius-lg": "A corner radius has no theme."
+    },
+    "darkOnly": {
+      "--tb-fill": "Glass controls exist only in dark; light draws the same chip with a shadow and no rim.",
+      "--tb-fill-hover": "See --tb-fill.",
+      "--tb-fill-active": "See --tb-fill.",
+      "--tb-rim": "See --tb-fill.",
+      "--tb-rim-top": "Unused since the rim went uniform; kept so Unigraph's .tb-btn stays name-for-name alignable."
+    }
+  },
+
+  "ladders": [
+    {
+      "theme": "light",
+      "why": "Every neutral fill is one gray at a different alpha, so the system reduces to an ordering. Break it and a hovered control reads heavier than the selected one — a real bug found twice in the audit, both times using entirely correct tokens.",
+      "chain": ["--seg-hover", "--selected-soft", "--selected", "--selected-strong", "--selected-hover"]
+    },
+    {
+      "theme": "dark",
+      "why": "The white family. Dark mixes a white and a gray family, and only same-base tokens are comparable.",
+      "chain": ["--tb-fill", "--seg-hover", "--tb-fill-hover", "--tb-fill-active", "--selected-hover"]
+    }
+  ],
+
+  "equals": [
+    {
+      "theme": "light",
+      "why": "A hovered button and a selected one read alike on purpose. Breaking it silently changes what 'engaged' means.",
+      "tokens": ["--hover", "--selected-strong"]
+    }
+  ]
+}

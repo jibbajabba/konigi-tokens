@@ -5,13 +5,19 @@
   "private": true,
   "type": "module",
   "files": [
-    "tokens.css"
+    "tokens.css",
+    "invariants.json",
+    "scripts"
   ],
   "exports": {
+    ".": "./tokens.css",
     "./tokens.css": "./tokens.css",
+    "./invariants.json": "./invariants.json",
+    "./check": "./scripts/check.mjs",
     "./package.json": "./package.json"
   },
   "scripts": {
+    "check": "node scripts/check.mjs --tokens tokens.css --invariants invariants.json",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },

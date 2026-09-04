@@ -37,10 +37,15 @@ restyle done in Figma is a proposal until it lands in this file.
 **A token earns a place here only when more than one app already has it and
 they already agree what it means.** Not when one app might want it later. That
 rule is the only thing keeping this from becoming a junk drawer. App-specific
-tokens stay in the app. Thirteen tokens that failed this test — `--console-*`,
-`--toast-accent*`, `--archived*`, `--star`, `--chrome` — were cut in runbook
-step 1; they're Unicron's and still live in `brain-app/src/styles/tokens.css`.
-The file holds **48** now. If you add one, it has to clear the same bar.
+tokens stay in the app. Eleven that failed it — `--console-*`, `--toast-muted`,
+`--archived*`, `--star`, `--chrome` — were cut in runbook step 1; they're
+Unicron's and still live in `brain-app/src/styles/tokens.css`. The file holds
+**50** now. If you add one, it has to clear the same bar.
+
+Apply that bar by **value, not by `var()` reference**. An app that hardcodes
+`#8aa9ff` has the token; it just hasn't spelled it as one yet. Grepping for
+`var(--x)` measures what an app uses and will tell you to cut something two apps
+genuinely share — it did, on `--toast-accent`.
 
 **Never branch on theme in a component.** Every token has a light and a dark
 value, so components reference `var(--token)` and nothing else. A
@@ -59,7 +64,7 @@ including the deliberate equality `--hover === --selected-strong` in light.
 `tokens.css` has three blocks:
 
 1. `:root` — light values, plus the non-token bits (`color-scheme`,
-   `font-synthesis`). 43 of the 48 live here.
+   `font-synthesis`). 45 of the 50 live here.
 2. `:root[data-theme="light"], [data-theme="light"]`
 3. `:root[data-theme="dark"], [data-theme="dark"]` — dark values, plus the
    five `--tb-*` glass tokens that exist *only* in dark.

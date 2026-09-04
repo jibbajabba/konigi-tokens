@@ -17,22 +17,37 @@ Unicron's, 38 shared names, zero value conflicts, zero Unigraph-only tokens.**
 This was never a merge. It's an extraction, and the hard part — agreeing on
 values — is already done.
 
-## The 13 that shouldn't be here
+## The 11 that shouldn't be here — done
 
 The README rule is right: *a token earns a place only when more than one app
-already has it and they already agree what it means.* Thirteen tokens currently
-upstream fail that test. Unigraph references none of them, zero times:
+already has it and they already agree what it means.* Eleven tokens failed that
+test and came out:
 
 ```
 --console-bg  --console-text  --console-muted
 --console-dim  --console-add  --console-remove
---toast-accent  --toast-accent-hover  --toast-muted
+--toast-muted
 --archived  --archived-text  --star
 --chrome
 ```
 
 A diff console and a graph canvas are Unicron's problem. These go back to
-`brain-app/src/styles/tokens.local.css`, leaving **48 shared**.
+`brain-app/src/styles/tokens.local.css` at step 5, leaving **50 shared**.
+
+I had this at thirteen, and two of them were wrong. `--toast-accent` and
+`--toast-accent-hover` stay. The test I ran was "does Unigraph reference
+`var(--toast-accent)`" — it doesn't, so out they went. But Unigraph hardcodes
+`#8aa9ff` and `#acc1ff` in `.snackbar-undo`, byte-identical, under a comment
+giving the same reason the shared file gives: the toast is dark in both themes,
+so the accent has to read against dark either way. Both apps have them and both
+agree what they mean, which is the whole rule. Grepping for `var()` measures
+what an app *uses*; the rule is about what an app *has*, and a literal counts.
+Putting them upstream is also what lets step 6 replace those two literals.
+
+The other eleven were checked the same way, by value rather than by reference,
+and none of them appear in Unigraph. Two near-misses that are coincidence, not
+usage: `#1f1d1a` is `--console-bg` here but `--toast-bg` and `--text` there, and
+`#8b867d` is `--console-muted` here but `--muted` there.
 
 Two of the 48 are deliberately unused in Unicron and kept for alignment:
 `--rail-glass` and `--tb-rim-top`. That's fine here and should be a warning, not

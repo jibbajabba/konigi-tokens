@@ -13,16 +13,20 @@ Commit both app working trees before you start. Step 5 deletes
 
 ---
 
-## 1 · Split the 13 back out
+## 1 · Split the 11 back out — done
 
-They're Unicron's. Cut them from `tokens.css` here and land them in the app.
+They're Unicron's. Cut from `tokens.css` here; they land in the app at step 5,
+since `brain-app/src/styles/tokens.css` still holds its own full copy and
+writing `tokens.local.css` now would only make a third one.
 
 ```
 --console-bg  --console-text  --console-muted  --console-dim
---console-add  --console-remove
---toast-accent  --toast-accent-hover  --toast-muted
+--console-add  --console-remove  --toast-muted
 --archived  --archived-text  --star  --chrome
 ```
+
+Not `--toast-accent` / `--toast-accent-hover` — Unigraph hardcodes both values
+in `.snackbar-undo`, so they clear the bar. See PLAN.md.
 
 Each has a comment block above it explaining why it exists — move the comment
 with the token, it's the part that stops someone re-adding it later. Both the
@@ -32,7 +36,7 @@ deliberately declared in light only.
 ```bash
 cd ~/Sites/konigi-tokens
 $EDITOR tokens.css
-npm run storybook   # the catalog should now show 48, and still group correctly
+npm run storybook   # the catalog should now show 50, and still group correctly
 ```
 
 **Verify.** `grep -c -- '^\s*--' tokens.css` and the catalog agree. No name
@@ -248,8 +252,8 @@ dispatch across repositories.
 
 ## Done when
 
-- [ ] `tokens.css` holds 48; the 13 live in `brain-app/src/styles/tokens.local.css`
-- [ ] The catalog is a URL, not a localhost port, and shows 48 tokens
+- [x] `tokens.css` holds 50; the 11 go to `brain-app/src/styles/tokens.local.css` at step 5
+- [ ] The catalog is a URL, not a localhost port, and shows 50 tokens
 - [ ] Tagged `v1.0.0`, `npm run check` clean
 - [ ] Unicron builds byte-identical CSS to its pre-split baseline
 - [ ] Unigraph has zero `data-theme="dark"` selectors in `App.css`
