@@ -213,7 +213,17 @@ those `/* tokens-allow */` and re-run to reach zero.
 
 ---
 
-## 6 · Unigraph adopts
+## 6 · Unigraph adopts — done
+
+On branch `adopt-konigi-tokens` in `~/Sites/unigraph`, pinned at `v1.0.2`. No
+local token file — its 38 were a strict subset, so there was nothing to keep.
+
+Beyond the three fixes below: the snackbar's two hardcoded accents became
+`var(--toast-accent)`, a dead `var(--danger, #c0392b)` fallback came off, and
+the `@media print` block keeps its ten literals under one block-scoped
+`tokens-allow`. Two shadows — the tooltip's and the image view's — are marked
+token candidates rather than retuned, since nothing shared matches them and
+changing them isn't part of adopting the package.
 
 Same two import lines. Its local file is empty, so skip that import entirely
 rather than shipping an empty `:root {}`.
@@ -277,8 +287,8 @@ dispatch across repositories.
 - [x] The catalog is a URL, not a localhost port, and shows 50 tokens
 - [x] Tagged `v1.0.0`, `npm run check` clean
 - [x] Unicron resolves all 67 tokens identically to its pre-split baseline, both themes
-- [ ] Unigraph has zero `data-theme="dark"` selectors in `App.css`
-- [ ] Both apps pin the same tag, both lockfiles committed
+- [x] Unigraph has zero `data-theme="dark"` selectors in `App.css` (grep still finds one hit — it's prose in a comment)
+- [ ] Both apps pin the same tag — Unicron is on v1.0.1, Unigraph on v1.0.2
 - [x] A deliberately broken ladder fails the checker, and shows red in the ladder story
 
 Rollback at any point: `npm rm @konigi/tokens`, restore `src/styles/tokens.css`
