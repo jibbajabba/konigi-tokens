@@ -189,6 +189,13 @@ if (cssRoot) {
    */
   const declaredLocally = new Set();
   const used = new Set();
+  // Seed with references the token files make to each other. --control-bg is
+  // var(--tb-fill) in dark, and once the shared file lives in node_modules
+  // instead of src that reference stops being visible from --css — which had
+  // adopting the package spuriously report half the glass tokens as unused.
+  for (const f of tokenFiles) {
+    for (const m of mask(readFileSync(f, "utf8")).matchAll(/var\(\s*(--[\w-]+)/g)) used.add(m[1]);
+  }
   for (const f of codeFiles) {
     const src = strip(readFileSync(f, "utf8"), f);
     for (const m of src.matchAll(/(--[\w-]+)\s*:/g)) declaredLocally.add(m[1]);
@@ -197,16 +204,30 @@ if (cssRoot) {
     for (const m of src.matchAll(/var\(\s*(--[\w-]+)/g)) used.add(m[1]);
   }
 
-  // Rule 1 — literal colors. Comments masked; `/* tokens-allow */` on the line
-  // opts out, for the handful that genuinely can't be a token.
+  // Rule 1 — literal colors. `tokens-allow` opts out, for the handful that
+  // genuinely can't be a token: ::highlight() can't see custom properties, and
+  // paper behind a light-authored diagram has to stay white in both themes.
+  //
+  // The marker counts on the line itself or anywhere in the comment block
+  // directly above it. Most of these need a sentence of explanation and that
+  // doesn't fit on the end of a declaration.
   const literal = /#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?)\s*\(/;
   for (const f of cssFiles) {
+    const raw = readFileSync(f, "utf8").split("\n");
     const lines = mask(readFileSync(f, "utf8")).split("\n");
-    const rawLines = readFileSync(f, "utf8").split("\n");
+    /** A line that's nothing but comment: blank once masked, not blank before. */
+    const commentOnly = (i) => lines[i]?.trim() === "" && raw[i]?.trim() !== "";
+    const allowed = (i) => {
+      if (raw[i].includes("tokens-allow")) return true;
+      for (let j = i - 1; j >= 0 && commentOnly(j); j--) {
+        if (raw[j].includes("tokens-allow")) return true;
+      }
+      return false;
+    };
     lines.forEach((line, i) => {
       if (!literal.test(line)) return;
-      if (rawLines[i].includes("tokens-allow")) return;
-      err(1, `${f}:${i + 1} — literal color outside the token files: ${rawLines[i].trim()}`);
+      if (allowed(i)) return;
+      err(1, `${f}:${i + 1} — literal color outside the token files: ${raw[i].trim()}`);
     });
   }
 
