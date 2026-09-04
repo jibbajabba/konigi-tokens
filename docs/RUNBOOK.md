@@ -161,7 +161,21 @@ dark side by side. That URL is the artifact — bookmark it.
 
 ---
 
-## 5 · Unicron adopts
+## 5 · Unicron adopts — done
+
+On branch `adopt-konigi-tokens` in `~/Sites/brain-app`, pinned at `v1.0.1`.
+
+Two corrections to what's written below. The six `--graph-*` tokens belong in
+`tokens.local.css` too — the plan calls them "already excluded", meaning from
+upstream, not that Unicron doesn't have them, and building the local file from
+the thirteen-token list alone drops them. And the built CSS is *not* identical:
+the shared file scopes dark as `:root[data-theme="dark"], [data-theme="dark"]`
+where the app's used the single selector, so the output differs by 84 bytes of
+selector text. Compare resolved token values instead — that's what actually
+paints, and it's what caught the missing graph tokens.
+
+`invariants.local.json` sits beside `package.json` and declares the app's
+theme-invariant tokens, merged with the shared one by `check.mjs`.
 
 No value changes, so the built CSS should come out identical.
 
@@ -262,7 +276,7 @@ dispatch across repositories.
 - [x] `tokens.css` holds 50; the 11 go to `brain-app/src/styles/tokens.local.css` at step 5
 - [x] The catalog is a URL, not a localhost port, and shows 50 tokens
 - [x] Tagged `v1.0.0`, `npm run check` clean
-- [ ] Unicron builds byte-identical CSS to its pre-split baseline
+- [x] Unicron resolves all 67 tokens identically to its pre-split baseline, both themes
 - [ ] Unigraph has zero `data-theme="dark"` selectors in `App.css`
 - [ ] Both apps pin the same tag, both lockfiles committed
 - [x] A deliberately broken ladder fails the checker, and shows red in the ladder story
