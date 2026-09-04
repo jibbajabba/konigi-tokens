@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import tokensSrc from "../tokens.css?raw";
+import { block, declarations } from "../scripts/parse.mjs";
 
 /**
  * The catalog reads tokens.css itself rather than listing tokens by hand.
@@ -16,41 +17,6 @@ interface Token {
 interface Section {
   title: string;
   tokens: Token[];
-}
-
-/**
- * Comments blanked out but every index preserved, so a selector search can't
- * match prose. The file's own header documents `:root[data-theme="dark"]`, and
- * searching the raw text found that sentence instead of the rule — which
- * silently handed back the light block and printed light values under "dark".
- * Same length in, same length out, so offsets still point into the original.
- */
-function mask(css: string): string {
-  return css.replace(/\/\*[\s\S]*?\*\//g, (m) => " ".repeat(m.length));
-}
-
-/** Pull one top-level block out of the stylesheet by its selector. */
-function block(css: string, selector: string): string {
-  const masked = mask(css);
-  const at = masked.indexOf(selector);
-  if (at === -1) return "";
-  const open = masked.indexOf("{", at);
-  if (open === -1) return "";
-  let depth = 0;
-  for (let i = open; i < masked.length; i++) {
-    if (masked[i] === "{") depth++;
-    else if (masked[i] === "}" && --depth === 0) return css.slice(open + 1, i);
-  }
-  return "";
-}
-
-/** Every `--name: value;` in a block, values allowed to wrap across lines. */
-function declarations(body: string): Map<string, string> {
-  const out = new Map<string, string>();
-  const re = /(--[\w-]+)\s*:\s*([^;]+);/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(body))) out.set(m[1], m[2].split(/\s+/).join(" "));
-  return out;
 }
 
 /**

@@ -23,6 +23,7 @@
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, extname, relative } from "node:path";
+import { mask, block, declarations, rgba } from "./parse.mjs";
 
 // ---------------------------------------------------------------- args
 
@@ -46,39 +47,6 @@ const err = (rule, msg) => errors.push(`[rule ${rule}] ${msg}`);
 const warn = (rule, msg) => warnings.push(`[rule ${rule}] ${msg}`);
 
 // ---------------------------------------------------------------- parsing
-
-/**
- * Blank every comment, preserving both length and line breaks so offsets and
- * reported line numbers still point into the original. Searching raw text for a selector finds the header prose that
- * mentions it instead of the rule itself — that bug printed light values under
- * "dark" in the Storybook catalog before anyone noticed.
- */
-const mask = (css) =>
-  css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
-
-/** The body of the first top-level block whose selector starts with `sel`. */
-function block(css, sel) {
-  const m = mask(css);
-  const at = m.indexOf(sel);
-  if (at === -1) return "";
-  const open = m.indexOf("{", at);
-  if (open === -1) return "";
-  let depth = 0;
-  for (let i = open; i < m.length; i++) {
-    if (m[i] === "{") depth++;
-    else if (m[i] === "}" && --depth === 0) return css.slice(open + 1, i);
-  }
-  return "";
-}
-
-/** Every `--name: value;` in a block body. Values may wrap across lines. */
-function declarations(body) {
-  const out = new Map();
-  const re = /(--[\w-]+)\s*:\s*([^;]+);/g;
-  let m;
-  while ((m = re.exec(mask(body)))) out.set(m[1], m[2].trim().split(/\s+/).join(" "));
-  return out;
-}
 
 const light = new Map();
 const dark = new Map();
@@ -141,13 +109,6 @@ for (const name of [...lightOnly, ...darkOnly]) {
 }
 
 // ---------------------------------------------------------------- rule 4
-
-/** rgba(r, g, b, a) → { base: "r,g,b", alpha }. Anything else isn't comparable. */
-function rgba(value) {
-  const m = /^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)$/.exec(value ?? "");
-  if (!m) return null;
-  return { base: `${m[1]},${m[2]},${m[3]}`, alpha: m[4] === undefined ? 1 : Number(m[4]) };
-}
 
 for (const ladder of inv.ladders ?? []) {
   const { theme, chain } = ladder;

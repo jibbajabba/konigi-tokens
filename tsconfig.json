@@ -4,11 +4,14 @@
     "lib": ["ES2022", "DOM"],
     "module": "ESNext",
     "moduleResolution": "bundler",
+    // scripts/parse.mjs is the shared token parser. Plain JS with JSDoc so
+    // check.mjs can run under bare node, typed enough for the stories.
+    "allowJs": true,
     "jsx": "react-jsx",
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
     "types": ["vite/client"]
   },
-  "include": ["stories", ".storybook"]
+  "include": ["stories", ".storybook", "scripts"]
 }
