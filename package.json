@@ -1,6 +1,6 @@
 {
   "name": "@konigi/tokens",
-  "version": "0.1.0",
+  "version": "1.0.3",
   "description": "Design tokens shared across Konigi apps. Code is truth; Figma is generated from it.",
   "private": true,
   "type": "module",
