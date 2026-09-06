@@ -130,7 +130,13 @@ Three workflows, all running the same `scripts/check.mjs`.
   branch, build, open a PR. It merges nothing. It just means a token change
   can't sit unnoticed in one app for a month.
 
-Semver for a token package:
+Semver for a token package. The version is the *package's*, not any app's —
+Unicron is on 0.22.2 and Unigraph on 0.3.0, and adopting this doesn't touch
+either. Keep `package.json`'s version field and the git tag in step; a `github:`
+dependency resolves by ref and won't complain if they drift, which is exactly
+why they do.
+
+
 
 - **major** — a token is removed or renamed. Breaks consumers via rule 2, which
   is the point.

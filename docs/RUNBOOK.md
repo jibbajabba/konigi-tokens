@@ -288,7 +288,7 @@ dispatch across repositories.
 - [x] Tagged `v1.0.0`, `npm run check` clean
 - [x] Unicron resolves all 67 tokens identically to its pre-split baseline, both themes
 - [x] Unigraph has zero `data-theme="dark"` selectors in `App.css` (grep still finds one hit — it's prose in a comment)
-- [ ] Both apps pin the same tag — Unicron is on v1.0.1, Unigraph on v1.0.2
+- [x] Both apps pin the same tag (`v1.0.3`), both lockfiles committed
 - [x] A deliberately broken ladder fails the checker, and shows red in the ladder story
 
 Rollback at any point: `npm rm @konigi/tokens`, restore `src/styles/tokens.css`
