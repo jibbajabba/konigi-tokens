@@ -268,7 +268,29 @@ sliding pill instead of matching it.
 
 ---
 
-## 7 · App CI, then the canary
+## 7 · App CI, then the canary — CI done, canary needs a token
+
+Both apps have `ci` (npm ci, `npm run check`, `tsc && vite build`, plus Unicron's
+130 vitest tests) and both went green on the first run. Both app repos are
+private and `konigi-tokens` is public, so their `npm ci` fetches the package
+with no credentials.
+
+`canary.yml` is in both apps and `release.yml` is here, all unfired — the
+dispatch needs `CANARY_TOKEN`. `release.yml` also refuses a tag whose number
+doesn't match `package.json`, which is the thing that quietly drifted for three
+releases.
+
+To finish: create a fine-grained PAT on `jibbajabba`, scoped to **unicron** and
+**unigraph**, with **Contents: read and write** and **Pull requests: read and
+write**. Then:
+
+```bash
+gh secret set CANARY_TOKEN -R jibbajabba/konigi-tokens
+git tag v1.0.4 && git push origin v1.0.4   # bump package.json first, or verify fails
+```
+
+Two canary PRs should open. Close them — that run is the test.
+
 
 Same workflow file in both apps: `npm ci`, `check.mjs`, `tsc --noEmit`,
 `vite build`.
