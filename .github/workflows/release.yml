@@ -1,0 +1,54 @@
+# Fires on a version tag. Two jobs, and the first one gates the second.
+name: release
+on:
+  push:
+    tags: ["v*"]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+
+      # A github: dependency resolves by git ref and never looks at the version
+      # field, which is exactly why the two drifted for three releases without
+      # anyone noticing. The semver contract in docs/PLAN.md is only worth
+      # something if you can read the version off the package.
+      - name: package.json version matches the tag
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::tag $GITHUB_REF_NAME says $tag, package.json says $pkg."
+            echo "::error::Set the version field and re-tag. Don't move a published tag."
+            exit 1
+          fi
+          echo "both say $pkg"
+
+      - run: npm run check
+      - run: npx tsc --noEmit
+
+  canary:
+    needs: verify
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        repo: [jibbajabba/unicron, jibbajabba/unigraph]
+    steps:
+      # The built-in GITHUB_TOKEN can't dispatch across repositories, so this
+      # needs a fine-grained PAT with contents: write and pull-requests: write
+      # on both app repos, stored here as CANARY_TOKEN. That it's a PAT is also
+      # what makes each app's ci run on the PR the canary opens — a PR opened
+      # with GITHUB_TOKEN wouldn't trigger one.
+      - name: Tell ${{ matrix.repo }}
+        env:
+          GH_TOKEN: ${{ secrets.CANARY_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh api "repos/${{ matrix.repo }}/dispatches" \
+            -f event_type=konigi-tokens-release \
+            -F "client_payload[tag]=$GITHUB_REF_NAME"
