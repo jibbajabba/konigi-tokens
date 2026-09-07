@@ -282,14 +282,18 @@ releases.
 
 To finish: create a fine-grained PAT on `jibbajabba`, scoped to **unicron** and
 **unigraph**, with **Contents: read and write** and **Pull requests: read and
-write**. Then:
+write**. Set it in **all three** repos — secrets don't cross repositories, and
+the first run learned that the slow way: upstream dispatched, both branches
+pushed, and neither PR opened because `GH_TOKEN` was empty in the app.
 
 ```bash
-gh secret set CANARY_TOKEN -R jibbajabba/konigi-tokens
-git tag v1.0.4 && git push origin v1.0.4   # bump package.json first, or verify fails
+for r in konigi-tokens unicron unigraph; do gh secret set CANARY_TOKEN -R jibbajabba/$r; done
+npm version 1.0.5 --no-git-tag-version && git commit -aqm "1.0.5" && git push
+git tag v1.0.5 && git push origin v1.0.5
 ```
 
-Two canary PRs should open. Close them — that run is the test.
+Two canary PRs should open. Close them with `--delete-branch` — that run is the
+test, not the diff.
 
 
 Same workflow file in both apps: `npm ci`, `check.mjs`, `tsc --noEmit`,

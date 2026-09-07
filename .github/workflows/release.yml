@@ -44,6 +44,11 @@ jobs:
       # on both app repos, stored here as CANARY_TOKEN. That it's a PAT is also
       # what makes each app's ci run on the PR the canary opens — a PR opened
       # with GITHUB_TOKEN wouldn't trigger one.
+      #
+      # The same secret has to be set in each app repo too. Secrets don't cross
+      # repositories: this one dispatches, and the app's canary.yml uses its own
+      # copy to open the PR. Setting it only here gets you a dispatch that
+      # succeeds, a branch that pushes, and no PR.
       - name: Tell ${{ matrix.repo }}
         env:
           GH_TOKEN: ${{ secrets.CANARY_TOKEN }}
