@@ -14,11 +14,15 @@
  *
  * Usage
  *   node scripts/check.mjs --tokens tokens.css --invariants invariants.json
- *   node scripts/check.mjs --tokens shared.css,local.css --css src \
+ *   node scripts/check.mjs --tokens tokens.css --invariants invariants.json \
+ *     --css controls.css --no-unused
+ *   node scripts/check.mjs --tokens shared.css,local.css \
+ *     --css src,node_modules/@konigi/tokens/controls.css \
  *     --invariants shared/invariants.json,invariants.local.json
  *
  * --tokens and --invariants both take comma-separated lists in cascade order:
- * later files win, the same way the app's imports do. Exits non-zero on any error; warnings don't
+ * later files win, the same way the app's imports do. --css takes a list too,
+ * of directories or single files. Exits non-zero on any error; warnings don't
  * fail the build.
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
@@ -34,10 +38,14 @@ const flag = (name) => {
 };
 const tokenFiles = (flag("--tokens") ?? "").split(",").filter(Boolean);
 const invariantFiles = (flag("--invariants") ?? "").split(",").filter(Boolean);
-const cssRoot = flag("--css");
+const cssRoots = (flag("--css") ?? "").split(",").filter(Boolean);
+// Rule 6 asks "does anything use this token", which only means something when
+// --css covers everything that could. Pointing it at one file — controls.css on
+// its own, say — makes every token it doesn't happen to use look dead.
+const noUnused = args.includes("--no-unused");
 
 if (!tokenFiles.length || !invariantFiles.length) {
-  console.error("usage: check.mjs --tokens a.css[,b.css] --invariants a.json[,b.json] [--css src]");
+  console.error("usage: check.mjs --tokens a.css[,b.css] --invariants a.json[,b.json] [--css src[,file.css]]");
   process.exit(2);
 }
 
@@ -151,7 +159,7 @@ for (const eq of inv.equals ?? []) {
 
 // ---------------------------------------------------------------- rules 1, 2, 6
 
-if (cssRoot) {
+if (cssRoots.length) {
   const walk = (dir, out = []) => {
     for (const entry of readdirSync(dir)) {
       const p = join(dir, entry);
@@ -161,7 +169,13 @@ if (cssRoot) {
     }
     return out;
   };
-  const all = walk(cssRoot);
+  // Comma-separated, and each entry may be a directory or a single file. An app
+  // has to pass the package's own controls.css here as well as its src: once
+  // those rules move out of the app, they're the only thing using --control-*,
+  // and without this rule 6 reports the whole control layer as unused.
+  const all = cssRoots.flatMap((root) =>
+    statSync(root).isDirectory() ? walk(root) : [root]
+  );
   const tokenSet = new Set(tokenFiles.map((f) => relative(".", f)));
   const cssFiles = all.filter((f) => extname(f) === ".css" && !tokenSet.has(relative(".", f)));
   const codeFiles = all.filter((f) => [".css", ".ts", ".tsx", ".js", ".jsx"].includes(extname(f)));
@@ -271,8 +285,8 @@ if (cssRoot) {
 
   // Rule 6 — warning only. Upstream is a vocabulary; an app is a consumer, and
   // a consumer is allowed not to say every word.
-  for (const name of names) {
-    if (!used.has(name)) warn(6, `${name} is declared but never used under ${cssRoot}.`);
+  if (!noUnused) for (const name of names) {
+    if (!used.has(name)) warn(6, `${name} is declared but never used under ${cssRoots.join(", ")}.`);
   }
 }
 

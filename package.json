@@ -1,6 +1,6 @@
 {
   "name": "@konigi/tokens",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Design tokens and the shared control layer for Konigi apps. Code is truth; Figma is generated from it.",
   "private": true,
   "type": "module",
@@ -19,7 +19,9 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "check": "node scripts/check.mjs --tokens tokens.css --invariants invariants.json",
+    "check": "npm run check:tokens && npm run check:controls",
+    "check:tokens": "node scripts/check.mjs --tokens tokens.css --invariants invariants.json",
+    "check:controls": "node scripts/check.mjs --tokens tokens.css --invariants invariants.json --css controls.css --no-unused",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
