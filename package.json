@@ -1,17 +1,19 @@
 {
   "name": "@konigi/tokens",
-  "version": "2.0.0",
-  "description": "Design tokens shared across Konigi apps. Code is truth; Figma is generated from it.",
+  "version": "2.1.0",
+  "description": "Design tokens and the shared control layer for Konigi apps. Code is truth; Figma is generated from it.",
   "private": true,
   "type": "module",
   "files": [
     "tokens.css",
+    "controls.css",
     "invariants.json",
     "scripts"
   ],
   "exports": {
     ".": "./tokens.css",
     "./tokens.css": "./tokens.css",
+    "./controls.css": "./controls.css",
     "./invariants.json": "./invariants.json",
     "./check": "./scripts/check.mjs",
     "./package.json": "./package.json"

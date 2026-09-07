@@ -25,8 +25,9 @@ npm i file:../konigi-tokens
 ```
 
 ```css
-@import "@konigi/tokens/tokens.css";  /* shared core first */
-@import "./styles/tokens.css";        /* the app's own tokens second */
+@import "@konigi/tokens/tokens.css";    /* shared core first */
+@import "@konigi/tokens/controls.css";  /* the control layer, built on them */
+@import "./styles/tokens.css";          /* the app's own tokens */
 ```
 
 Order matters. Later wins, so an app can override a shared token on purpose —
@@ -84,9 +85,14 @@ both apps onto this package are in [docs/RUNBOOK.md](docs/RUNBOOK.md).
 Staged, and each stage is useful on its own:
 
 - **A — token catalog.** Done. Zero drift risk: tokens *are* the shared artifact.
-- **B — the control layer.** Move the button/pill/segmented/menu CSS here as
-  `controls.css` so both apps import it and the stories render the real thing.
-  A Storybook of demo components that merely resemble the apps' is a museum.
+- **B — the control layer.** Done, and smaller than planned. `controls.css`
+  holds `.tb-btn` and the segmented control — the rules both apps had and
+  agreed on, which is the same bar a token has to clear. Unicron's `.ghost`,
+  `.search`, `.meta-pick` and the rest stayed put: one app having them is
+  exactly the junk drawer that rule exists to prevent. `.view-seg` stayed too,
+  because the two apps need different heights for it — Unigraph's shares the
+  toolbar row with `.tb-btn`, Unicron's sits in the detail actions.
+  Foundations → Controls renders the real classes, not look-alikes.
 - **C — Figma library.** Generated from `tokens.css`: Variables for every token,
   light and dark as modes on one collection so a Figma mode switch mirrors
   `data-theme`.

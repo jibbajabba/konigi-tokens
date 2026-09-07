@@ -1,0 +1,133 @@
+/* @konigi/controls — the raised control layer, shared by every Konigi app.
+
+   Imported after tokens.css, which it depends on entirely: every colour and
+   every shadow here is a --control-* or --shadow-* token, and there isn't a
+   literal in the file. That's what lets one set of rules carry both themes —
+   the tokens swap, the rules don't.
+
+   What earns a place here is the same test tokens.css uses: more than one app
+   already has it and they already agree what it means. These rules were
+   byte-identical in Unicron and Unigraph before they moved, or differed only in
+   a value the two had already reconciled. Anything one app has alone stays in
+   that app.
+
+   Geometry is included on purpose, and that was a decision rather than an
+   oversight. The two apps were 30px/18px and 31px/19px; they're both 31/19 now.
+   A control layer that ships the material but not the size leaves every
+   consumer re-deriving the same numbers, and they drift.
+
+   What's deliberately NOT here: .view-seg. Both apps have one, and they need
+   different heights because they sit in different places — Unigraph's shares
+   the top-bar row with .tb-btn and has to match it; Unicron's lives in the
+   detail actions and doesn't. That's real app geometry, not a shared control,
+   and forcing one height on it would break one of the two. */
+
+/* ---- raised icon button ----
+   Equal padding + a full radius, so the fill is a circle rather than a rounded
+   rectangle and the button is sized by what's in it instead of by a magic
+   number. A 19px icon makes a 31px control.
+
+   The icon holds --muted through every state: the background alone carries
+   hover and selected, so a hovered button and a selected one read as one
+   control in two states rather than as two colours. */
+.tb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: var(--control-bg);
+  box-shadow: var(--shadow-control);
+  color: var(--muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 999px;
+  line-height: 1;
+  font-size: 15px;
+}
+
+.tb-btn svg {
+  width: 19px;
+  height: 19px;
+}
+
+.tb-btn:hover:not(:disabled) {
+  background: var(--control-hover);
+}
+
+/* Toggled on. Same fill a hovered button gets, because --hover and
+   --selected-strong are deliberately the same gray in light — one gray means
+   "this control is engaged", whether you're pointing at it or it's switched
+   on. check.mjs asserts that equality; it isn't a coincidence to preserve by
+   hand. */
+.tb-btn.active {
+  background: var(--control-selected);
+}
+
+/* Pointing at a button that's already on. Without this the on-state swallows
+   the cursor entirely, since selected and hover are the same gray. */
+.tb-btn.active:hover:not(:disabled) {
+  background: var(--control-selected-hover);
+}
+
+/* ---- segmented control ----
+   A track at the same elevation as a button, with a pill that slides between
+   the options. The pill is a sibling that sits *before* the buttons in the
+   DOM, which is why it's positioned rather than being a background on the
+   active button. */
+.seg {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--control-bg);
+  border-radius: 999px;
+  box-shadow: var(--shadow-control);
+}
+
+.seg button {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+/* --seg-hover, not --hover. --hover is the button gray, which is exactly what
+   the sliding pill paints — using it here fills an unselected segment as
+   heavily as the selected one, so pointing at a segment makes it look more
+   chosen than the chosen one. That shipped in Unigraph and in two of Unicron's
+   tab rows before anyone caught it, every time with correct token names. The
+   ladder in invariants.json is what keeps --seg-hover below every selected
+   fill; this rule is why that ladder matters. */
+.seg button:hover:not(.active) {
+  background: var(--seg-hover);
+}
+
+.seg button.active {
+  color: var(--text);
+}
+
+.seg-indicator {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 0;
+  width: 0;
+  z-index: 0;
+  opacity: 0;
+  border-radius: 999px;
+  background: var(--control-selected);
+  pointer-events: none;
+  transition:
+    transform 0.24s cubic-bezier(0.3, 0.85, 0.3, 1),
+    width 0.24s cubic-bezier(0.3, 0.85, 0.3, 1);
+}
