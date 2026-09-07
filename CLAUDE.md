@@ -40,7 +40,8 @@ rule is the only thing keeping this from becoming a junk drawer. App-specific
 tokens stay in the app. Eleven that failed it — `--console-*`, `--toast-muted`,
 `--archived*`, `--star`, `--chrome` — were cut in runbook step 1; they're
 Unicron's and still live in `brain-app/src/styles/tokens.css`. The file holds
-**50** now. If you add one, it has to clear the same bar.
+**49** now. If you add one, it has to clear the same bar — and if nothing
+paints one any more, it comes out. `--tb-rim-top` did, at 2.0.0.
 
 Apply that bar by **value, not by `var()` reference**. An app that hardcodes
 `#8aa9ff` has the token; it just hasn't spelled it as one yet. Grepping for
@@ -64,12 +65,12 @@ including the deliberate equality `--hover === --selected-strong` in light.
 `tokens.css` has three blocks:
 
 1. `:root` — light values, plus the non-token bits (`color-scheme`,
-   `font-synthesis`). 45 of the 50 live here.
+   `font-synthesis`). 45 of the 49 live here.
 2. `:root[data-theme="light"], [data-theme="light"]`
 3. `:root[data-theme="dark"], [data-theme="dark"]` — dark values, plus the
-   five `--tb-*` glass tokens that exist *only* in dark.
+   four `--tb-*` glass tokens that exist *only* in dark.
 
-Light and dark are not the same set, and nothing may assume they are. Five
+Light and dark are not the same set, and nothing may assume they are. Four
 tokens are dark-only; the three `--radius-*` are light-only and correctly so,
 since a corner radius has no theme. They're the only theme-invariant tokens
 left now that the console and toast-accent groups are gone, which is the

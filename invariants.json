@@ -14,8 +14,7 @@
       "--tb-fill": "Glass controls exist only in dark; light draws the same chip with a shadow and no rim.",
       "--tb-fill-hover": "See --tb-fill.",
       "--tb-fill-active": "See --tb-fill.",
-      "--tb-rim": "See --tb-fill.",
-      "--tb-rim-top": "Unused since the rim went uniform; kept so Unigraph's .tb-btn stays name-for-name alignable."
+      "--tb-rim": "See --tb-fill."
     }
   },
 

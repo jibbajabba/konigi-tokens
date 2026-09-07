@@ -49,9 +49,14 @@ and none of them appear in Unigraph. Two near-misses that are coincidence, not
 usage: `#1f1d1a` is `--console-bg` here but `--toast-bg` and `--text` there, and
 `#8b867d` is `--console-muted` here but `--muted` there.
 
-Two of the 48 are deliberately unused in Unicron and kept for alignment:
-`--rail-glass` and `--tb-rim-top`. That's fine here and should be a warning, not
-an error, in the apps. Upstream is a vocabulary; an app is a consumer.
+One of them, `--rail-glass`, is deliberately unused in Unicron and kept for
+alignment. That's fine here and should be a warning, not an error, in the apps.
+Upstream is a vocabulary; an app is a consumer.
+
+`--tb-rim-top` was the other one, and it came out at 2.0.0. Unigraph was the
+reason it was kept, and once Unigraph adopted `--shadow-control` nothing painted
+it in either app. A token no app paints is the junk drawer this file exists to
+avoid.
 
 ## What Unigraph has to change
 
@@ -73,8 +78,9 @@ Decision attached to (1): the shared `--shadow-control` is the **uniform** rim,
 one `inset 0 0 0 1px`, no brighter top edge. Unigraph loses its lit-from-above.
 That layer only paints where a shape has a flat top, so it lit wide pills and
 skipped round buttons — obvious in Unicron's mixed toolbar, hidden in Unigraph's
-mostly-round one. Take the uniform rim, or keep `--tb-rim-top` in Unigraph's
-local file and override `--shadow-control` there. Don't fork the shared token.
+mostly-round one. Unigraph took the uniform rim. An app that wants the old
+two-layer edge back overrides `--shadow-control` in its own token file; don't
+fork the shared token.
 
 ## Lint
 

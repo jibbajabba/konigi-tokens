@@ -10,7 +10,7 @@ token.
 other way round.
 
 That's a deliberate call, not an accident of order. Values get tuned live
-against a running app — nudge `--tb-rim-top`, watch HMR, nudge again — and a
+against a running app — nudge `--tb-fill`, watch HMR, nudge again — and a
 Figma-upstream pipeline would put an export step inside that loop. It also means
 no build step: no Style Dictionary, no Tokens Studio, nothing between an edit
 and a hot reload.
