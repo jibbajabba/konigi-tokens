@@ -172,9 +172,17 @@ does. It makes rule 4 legible instead of abstract, and it's the story you'd
 actually open while tuning a value. It needs `invariants.json` to exist, so it
 follows the lint work rather than preceding it.
 
-**Later — `controls.css`.** Move the button / pill / segmented / menu CSS here so
-both apps import it and the stories render the real components. The README
-already makes the argument: a Storybook of look-alikes is a museum.
+**Done — `controls.css`,** at 2.1.0, and a third the size this section imagined.
+What moved is what both apps had and agreed on, which is the bar a token has to
+clear: `.tb-btn` with its three states, and the segmented track, its buttons,
+the hover and the sliding indicator. Ten rules, no literals.
+
+Unicron has 28 rules using the control tokens and Unigraph has 8, and
+Unigraph's 8 are exactly the overlap. The other 20 — `.ghost`, `.search`,
+`.meta-pick`, `.kind-tab`, the tasks and brief buttons — are Unicron's alone
+and stayed there.
+
+Foundations → Controls renders the real classes from the real file.
 
 This one genuinely wants both apps consuming the package first. Until they do,
 you'd be writing a shared control layer against two apps that still hold their
@@ -187,10 +195,14 @@ Two things worth knowing before starting it:
 - Unicron's control layer is now genuinely portable. State lives in the
   `--control-*` tokens, so `.tb-btn`, `.ghost`, `.search`, the pills and the
   segmented tracks are all the same four rules with different geometry.
-- Geometry is *not* portable. Unicron's `.tb-btn` is 31px with a 19px icon;
-  Unigraph's is 30px with 18px. Ship the material, let each app keep its
-  sizing — or reconcile the sizes deliberately, but don't let `controls.css`
-  quietly impose one.
+- Geometry was reconciled deliberately rather than dodged: both apps are 31px
+  with a 19px icon now, and `controls.css` carries it. A control layer that
+  ships the material but not the size leaves every consumer re-deriving the
+  same numbers.
+- `.view-seg` is the exception and stayed local in both. Measured, it's 29px in
+  Unicron and 31px in Unigraph, and that isn't drift — Unigraph's shares the
+  top-bar row with `.tb-btn` and has to match it, Unicron's sits on the note
+  header. Geometry that depends on where a control lives isn't shared geometry.
 
 The catalog should grow a **ladder story** before it grows anything else: the
 neutral chains rendered as swatch strips in both themes, reading the same
