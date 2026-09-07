@@ -268,7 +268,7 @@ sliding pill instead of matching it.
 
 ---
 
-## 7 · App CI, then the canary — CI done, canary needs a token
+## 7 · App CI, then the canary — done
 
 Both apps have `ci` (npm ci, `npm run check`, `tsc && vite build`, plus Unicron's
 130 vitest tests) and both went green on the first run. Both app repos are
@@ -280,20 +280,31 @@ dispatch needs `CANARY_TOKEN`. `release.yml` also refuses a tag whose number
 doesn't match `package.json`, which is the thing that quietly drifted for three
 releases.
 
-To finish: create a fine-grained PAT on `jibbajabba`, scoped to **unicron** and
+`CANARY_TOKEN` is a fine-grained PAT on `jibbajabba`, scoped to **unicron** and
 **unigraph**, with **Contents: read and write** and **Pull requests: read and
-write**. Set it in **all three** repos — secrets don't cross repositories, and
-the first run learned that the slow way: upstream dispatched, both branches
-pushed, and neither PR opened because `GH_TOKEN` was empty in the app.
+write**, set in **all three** repos. Secrets don't cross repositories — upstream
+holds one to dispatch, each app holds one to open its PR. The first run learned
+that the slow way: `release` dispatched, both apps bumped and pushed a branch,
+and neither opened a PR because `GH_TOKEN` was empty. Each canary now checks for
+the secret as its first step, before pushing a branch with nothing to open
+against.
+
+Proven end to end on `v1.0.5`: the tag verified against `package.json`,
+dispatched to both apps, both opened a PR, and `ci` ran on both PRs. That last
+part is what makes it worth having — a PR opened with the built-in
+`GITHUB_TOKEN` triggers no workflow at all.
+
+To cut a release from here:
 
 ```bash
-for r in konigi-tokens unicron unigraph; do gh secret set CANARY_TOKEN -R jibbajabba/$r; done
-npm version 1.0.5 --no-git-tag-version && git commit -aqm "1.0.5" && git push
-git tag v1.0.5 && git push origin v1.0.5
+npm version <next> --no-git-tag-version
+git commit -aqm "<next>" && git push origin main
+git tag v<next> && git push origin v<next>
 ```
 
-Two canary PRs should open. Close them with `--delete-branch` — that run is the
-test, not the diff.
+Give it a few minutes before looking for the PRs. The chain runs two `npm ci`
+installs and a build first, so checking straight after pushing the tag finds
+nothing and looks like a failure.
 
 
 Same workflow file in both apps: `npm ci`, `check.mjs`, `tsc --noEmit`,
@@ -316,6 +327,7 @@ dispatch across repositories.
 - [x] Unigraph has zero `data-theme="dark"` selectors in `App.css` (grep still finds one hit — it's prose in a comment)
 - [x] Both apps pin the same tag (`v1.0.3`), both lockfiles committed
 - [x] A deliberately broken ladder fails the checker, and shows red in the ladder story
+- [x] The canary fires on a tag, opens a PR in both apps, and `ci` runs on that PR
 
 Rollback at any point: `npm rm @konigi/tokens`, restore `src/styles/tokens.css`
 from git, revert the `main.tsx` import. Nothing here touches app logic.
